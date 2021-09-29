@@ -1,0 +1,57 @@
+{
+  "name": "cymbaline",
+  "version": "0.1.0",
+  "description": "HTTP services wrapper for cloud",
+  "main": "lib/index.js",
+  "scripts": {
+    "test": "echo \"Error: no src/__tests__ specified\" && exit 1",
+    "start": "npx tsc && node lib/index.js",
+    "dev": "nodemon src/index.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ghaniza/cymbaline.git"
+  },
+  "keywords": [
+    "http",
+    "web",
+    "request",
+    "lambda",
+    "aws",
+    "typescript",
+    "decorator",
+    "mvc"
+  ],
+  "author": "Jean de Melo <ghanizadev@gmail.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ghaniza/cymbaline/issues"
+  },
+  "homepage": "https://github.com/ghaniza/cymbaline#readme",
+  "devDependencies": {
+    "@types/chai": "^4.2.22",
+    "@types/ejs": "^3.1.0",
+    "@types/express": "^4.17.13",
+    "@types/mocha": "^9.0.0",
+    "@types/node": "^16.10.1",
+    "chai": "^4.3.4",
+    "mocha": "^9.1.2",
+    "nodemon": "^2.0.13",
+    "serverless": "^2.60.0",
+    "serverless-offline": "^8.2.0",
+    "ts-node": "^10.2.1",
+    "typescript": "^4.4.3"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.996.0",
+    "chalk": "^2.4.2",
+    "ejs": "^3.1.6",
+    "express": "^4.17.1",
+    "glob": "^7.1.7",
+    "jsonwebtoken": "^8.5.1",
+    "jwks-rsa": "^2.0.4",
+    "reflect-metadata": "^0.1.13",
+    "serverless-http": "^2.7.0",
+    "tsyringe": "^4.6.0"
+  }
+}

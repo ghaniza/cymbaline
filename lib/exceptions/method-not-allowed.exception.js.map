@@ -1,0 +1,1 @@
+{"version":3,"file":"method-not-allowed.exception.js","sourceRoot":"","sources":["../../src/exceptions/method-not-allowed.exception.ts"],"names":[],"mappings":";;;AAAA,qDAA8C;AAE9C,MAAa,yBAA0B,SAAQ,8BAAa;IAC1D,YAAY,QAAgB,oBAAoB,EAAE,gBAAyB;QACzE,KAAK,CAAC,GAAG,EAAE,KAAK,EAAE,gBAAgB,CAAC,CAAA;IACrC,CAAC;CACF;AAJD,8DAIC"}
