@@ -6,10 +6,8 @@ export const Controller = (path: string) => {
         class ControllerClass extends constructor {
             controllerName = constructor.name;
             path = path;
-            router = [];
         }
 
-        Reflect.defineMetadata(constructor.name, ControllerClass, constructor)
         return ControllerClass
     }
 }

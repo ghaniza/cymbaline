@@ -1,46 +1,20 @@
 const MethodDecorator = (method: string, path: string, httpCode: number) => {
     return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
-        if (!target?.router)
-            Object.defineProperty(target, 'router', {
-                configurable: true,
-                get: () => {
-                    return [{
-                        propertyKey,
-                        method,
-                        path,
-                        httpCode,
-                        handler: descriptor.value
-                    }]
-                },
-            })
-        else {
-            const routes = target.router;
-
-            Object.defineProperty(target, 'router', {
-                configurable: true,
-                get: () => {
-                    return [
-                        ...routes,
-                        {
-                            propertyKey,
-                            method,
-                            path,
-                            httpCode,
-                            handler: descriptor.value,
-                            arguments: []
-                        }]
-                },
-            })
-        }
-
-        Reflect.defineMetadata(propertyKey, {
+        const data = {
             propertyKey,
             method,
             path,
             httpCode,
             handler: descriptor.value,
             arguments: []
-        }, target)
+        }
+
+        if(Reflect.hasMetadata(propertyKey, target)) {
+            const route = Reflect.getMetadata(propertyKey, target);
+            Reflect.defineMetadata(propertyKey, {...data, ...route}, target)
+        } else {
+            Reflect.defineMetadata(propertyKey, data, target)
+        }
     }
 }
 

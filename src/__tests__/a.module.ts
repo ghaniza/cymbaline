@@ -2,7 +2,8 @@ import Server, {Injectable} from "../index";
 import {Get, Post} from "../decorators/method.decorator";
 import {Controller} from "../decorators/controller.decorator";
 import {BadRequestException} from "../exceptions/bad-request.exception";
-import {Body} from "../decorators/body.decorator";
+import {Body, Param, Res} from "../decorators/argument.decorator";
+import {Response} from 'express'
 
 @Injectable()
 class Service {
@@ -26,7 +27,7 @@ class Database {
 class MyController {
     constructor(private readonly service: Service) { }
 
-    @Get('/a')
+    @Get('/service')
     public hello() {
         return this.service.getHello()
     }
@@ -36,9 +37,9 @@ class MyController {
         throw new BadRequestException()
     }
 
-    @Get('/')
-    public root(body: any) {
-        console.log({ body })
+    @Get('/c')
+    public root(@Body() body: any, second: any, @Param(':a') third: any) {
+        console.log({ body, second, third })
         return 'hello from root'
     }
 
@@ -46,11 +47,31 @@ class MyController {
     public world() {
         return 'b'
     }
+
+    @Get('/:id')
+    public getId(@Param('id') id: string) {
+        return id
+    }
+}
+
+@Controller('/other')
+class MyOtherController {
+    constructor(private readonly service: Service) { }
+
+    @Get('/:id/pdf')
+    public getId(@Param('id') id: string) {
+        return id + "to get pdf"
+    }
+
+    @Get('/response')
+    public getResponse(@Res() res: Response) {
+        res.setHeader("Custom", "test")
+    }
 }
 
 const server = new Server({
     dependencies: [Database.configure()],
-    controllers: [MyController],
+    controllers: [MyController, MyOtherController],
     queues: [],
     middlewares: []
 })

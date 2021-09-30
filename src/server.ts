@@ -31,6 +31,8 @@ export class Server {
     constructor(private readonly configuration: ServerConfigurationOptions, options?: ServerOptions) {
         this.app = express();
 
+        this.app.use(express.json())
+
         if (options) {
             if (options?.logger) {
                 this.logger = options.logger
@@ -54,6 +56,25 @@ export class Server {
         await Promise.all(this.configuration.dependencies.map(async d => await d()))
     }
 
+    private getArgumentByType(args: any[], req: Request, res: Response) {
+        return args.map(arg => {
+            if(!arg) return;
+
+            switch (arg.type){
+                case 'body':
+                    return arg.key ? req.body[arg.key] : req.body
+                case 'param':
+                    return arg.key ? req.params[arg.key] : req.params
+                case 'query':
+                    return arg.key ? req.query[arg.key] : req.query
+                case 'req':
+                    return req
+                case 'res':
+                    return res
+            }
+        })
+    }
+
     private configureControllers() {
         const controllers: any[] = this.configuration.controllers.map(c => container.resolve<typeof c>(c as InjectionToken<Function>))
 
@@ -61,14 +82,17 @@ export class Server {
             this.logger.log('info', `[server] Controller ${controller.controllerName}: Mapped to "${controller.path}"`)
             const router = Router()
 
-            console.log(controller)
+            Reflect.getMetadataKeys(controller).forEach(key => {
+                const route = Reflect.getMetadata(key, controller)
 
-            controller.router.forEach(route => {
                 if (controller.path === '/') controller.path = ""
 
                 router[route.method](controller.path + route.path, async (req: Request, res: Response, next: NextFunction) => {
                     try {
-                        const response = await route.handler.bind(controller)();
+                        const args = this.getArgumentByType(route.arguments, req, res)
+                        const response = await route.handler.bind(controller)(...args);
+
+                        if(route.arguments.find(a => a.type === 'res' && a.skip)) return next();
                         return res.status(route.httpCode).send(response);
                     } catch (e) {
                         next(e)
@@ -85,7 +109,7 @@ export class Server {
         this.app.use((req: Request, res: Response, next: NextFunction) => {
             req.timestamp = Date.now()
 
-            req.on('end', () => {
+            req.on('close', () => {
                 const host = req.hostname;
                 const user = req.user;
                 const duration = Date.now() - req.timestamp;
@@ -109,7 +133,7 @@ export class Server {
                         break;
                 }
 
-                const log = `[server]: ${host} ${user ?? '-'} [${new Date(req.timestamp).toUTCString()}] "${method} ${path} ${protocol}" ${status} ${bytes} -- ${duration}ms`
+                const log = `[server] ${host} ${user ?? '-'} [${new Date(req.timestamp).toUTCString()}] "${method} ${path} ${protocol}" ${status} ${bytes} -- ${duration}ms`
                 this.logger.log(level as any, log)
 
                 next()
