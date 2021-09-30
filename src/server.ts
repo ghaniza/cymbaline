@@ -3,6 +3,8 @@ import express, {Express, RequestHandler, Router, Response, Request, NextFunctio
 import {Middleware} from "./middlewares";
 import {DefaultLogger} from "./utils/logger";
 import {HTTPException} from "./exceptions/http.exception";
+import ServerlessHttp from "serverless-http";
+import {APIGatewayEvent, Context} from "aws-lambda";
 
 type ServerConfigurationOptions = {
     dependencies: ((...args: any[]) => Promise<any> | any)[];
@@ -151,8 +153,26 @@ export class Server {
         })
 
         this.logger.log('info', '[server] Done.')
-        this.app.listen(3000, () => {
+    }
+
+    public startServer(port?: number) {
+        this.app.listen(port, () => {
             this.logger.log('info', '[server] Listening to port 3000')
+        })
+    }
+
+    public getApiHandler(options?: { context?: Partial<Context> }): Function {
+        return ServerlessHttp(this.app, {
+            request: async (req: any, event: APIGatewayEvent, context: Context) => {
+                if (options && options.context) {
+                    context = {...context, ...options.context}
+                }
+
+                await this.init()
+
+                req.event = event
+                req.context = context
+            }
         })
     }
 }
