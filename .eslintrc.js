@@ -13,5 +13,6 @@ module.exports = {
     plugins: ['@typescript-eslint'],
     rules: {
         'no-useless-constructor': 0,
+        camelcase: 0,
     },
 }

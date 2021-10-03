@@ -126,6 +126,36 @@ describe('Server - API Gateway', () => {
         expect(response.body).toEqual('')
     })
 
+    it('Should get controller middleware injection', async () => {
+        const response = await handler(
+            apiEvent({
+                path: '/controller-c',
+                method: 'GET',
+                headers: {
+                    'custom-controller-header': 'something special',
+                },
+            })
+        )
+
+        expect(response.statusCode).toEqual(200)
+        expect(response.body).toEqual('something special')
+    })
+
+    it('Should get controller middleware injection from other method', async () => {
+        const response = await handler(
+            apiEvent({
+                path: '/controller-c',
+                method: 'POST',
+                headers: {
+                    'custom-controller-header': 'something special',
+                },
+            })
+        )
+
+        expect(response.statusCode).toEqual(201)
+        expect(response.body).toEqual('something special')
+    })
+
     it('Should process data', async () => {
         const queryString = {
             a: 4,

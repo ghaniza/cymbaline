@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response } from 'express'
+import { Request, Response } from 'express'
 import { Logger } from '../server'
 
 export class HTTPException extends Error {
@@ -15,7 +15,19 @@ export class HTTPException extends Error {
     }
 
     public static handler(e: Error, req: Request, res: Response, logger: Logger) {
-        if (process.env.DEBUG) {
+        if (process.env.DEBUG && e instanceof HTTPException) {
+            switch (true) {
+                case e.code >= 400 && e.code < 500:
+                    logger.log('warn', e)
+                    break
+                case e.code >= 500:
+                    logger.log('error', e)
+                    break
+                default:
+                    logger.log('info', e)
+                    break
+            }
+        } else if (process.env.DEBUG) {
             console.log(e)
         }
 

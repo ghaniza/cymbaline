@@ -2,19 +2,7 @@ export const ArgumentDecorator = (payload: any) => {
     return (target: any, propertyKey: string, index: number) => {
         if (Reflect.hasMetadata(propertyKey, target)) {
             const route = Reflect.getMetadata(propertyKey, target)
-
-            if (route.arguments.length <= index) {
-                const args = []
-
-                for (let i = 0; i < index + 1; i++) {
-                    if (i === index) args.push(payload)
-                    else args.push(route.arguments[i] ?? undefined)
-                }
-                route.arguments = args
-            } else {
-                route.arguments.splice(index, 1, payload)
-            }
-
+            route.arguments.splice(index, 1, payload)
             Reflect.defineMetadata(propertyKey, route, target)
         } else {
             const args = []

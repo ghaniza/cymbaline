@@ -4,4 +4,8 @@ export class BService {
             return { ...p, [c]: data[c] * 10 }
         }, {} as any)
     }
+
+    public async sqsMessage(msgId: string, message: string) {
+        return `[${msgId}] The message is: ${message}`
+    }
 }

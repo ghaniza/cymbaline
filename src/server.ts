@@ -5,6 +5,7 @@ import { DefaultLogger } from './utils/logger'
 import { HTTPException } from './exceptions/http.exception'
 import ServerlessHttp from 'serverless-http'
 import { APIGatewayEvent, Callback, Context, SQSEvent, SQSRecord } from 'aws-lambda'
+import qs from 'qs'
 
 type ServerConfigurationOptions = {
     dependencies: ((...args: any[]) => Promise<any> | any)[]
@@ -99,12 +100,30 @@ export class Server {
         return args.map((arg) => {
             if (!arg) return undefined
 
-            switch (arg.type) {
-                case 'body':
-                    return record.body
-                default:
-                    return record[arg.type]
+            if (arg.type === 'body') {
+                if (record?.messageAttributes) {
+                    const name = Object.keys(record.messageAttributes).find((k) => k.toLowerCase() === 'content-type')
+                    if (!name) return record.body
+
+                    const contentType = record.messageAttributes[name]
+
+                    if (contentType.dataType === 'String') {
+                        const value = contentType.stringValue
+
+                        if (value.includes('application/json')) {
+                            if (arg.key) return JSON.parse(record.body)[arg.key]
+                            return JSON.parse(record.body)
+                        } else if (value.includes('application/x-www-form-urlencoded')) {
+                            if (arg.key) return qs.parse(record.body)[arg.key]
+                            return qs.parse(record.body)
+                        }
+                    }
+                }
+
+                return record.body
             }
+
+            return record[arg.type]
         })
     }
 
@@ -115,10 +134,15 @@ export class Server {
 
         controllers.forEach((controller) => {
             this.logger.log('info', `[server] Controller ${controller.controllerName}: Mapped to "${controller.path}"`)
+
             const router = Router()
 
-            if (controller.middlewares?.length)
-                controller.middlewares.forEach((middleware) => {
+            const controllerMiddlewares =
+                Reflect.getMetadata(controller.uid + ':middlewares', controller, 'middlewares') ?? []
+            const middlewares = []
+
+            if (controllerMiddlewares?.length) {
+                controllerMiddlewares.forEach((middleware) => {
                     let mw = middleware
 
                     if (middleware.prototype instanceof CustomMiddleware) {
@@ -131,18 +155,18 @@ export class Server {
                             next()
                         }
                     }
-                    router.use(mw)
+                    middlewares.push(mw)
                 })
+            }
 
             Reflect.getMetadataKeys(controller).forEach((key) => {
                 const route = Reflect.getMetadata(key, controller)
-
                 if (controller.path === '/') controller.path = ''
 
-                let middlewares = []
+                let localMiddlewares = []
 
-                if (route.middlewares.length)
-                    middlewares = route.middlewares.map((middleware) => {
+                if (route.middlewares?.length)
+                    localMiddlewares = route.middlewares.map((middleware) => {
                         if (middleware.prototype instanceof CustomMiddleware) {
                             const mw = container.resolve<CustomMiddleware>(middleware as any)
                             return async (req, res, next) => {
@@ -156,7 +180,7 @@ export class Server {
 
                 router[route.method](
                     controller.path + route.path,
-                    ...middlewares,
+                    [...middlewares, ...localMiddlewares],
                     async (req: Request, res: Response, next: NextFunction) => {
                         try {
                             route.headers.forEach(([header, value]) => {
@@ -210,11 +234,11 @@ export class Server {
                 ).toUTCString()}] "${method} ${path} ${protocol}" ${status} ${bytes ?? 0} -- ${duration}ms`
                 this.logger.log(level as any, log)
 
-                next()
+                if (!res.headersSent) next()
             }
 
-            req.on('close', showLog)
             req.on('end', showLog)
+            res.on('finish', showLog)
 
             next()
         })
@@ -229,7 +253,13 @@ export class Server {
     }
 
     private initSQS(queueId: string, event: SQSEvent) {
-        const queue = this.configuration.queues.find((q) => q.prototype.queueId === queueId)
+        let queue: any
+        this.configuration.queues.forEach((q) => {
+            if (queue) return
+            const instance: any = container.resolve(q as any)
+            if (instance.queueId === queueId) queue = instance
+        })
+
         if (!queue) throw new Error(`Queue not found: "${queueId}"`)
 
         const queueHandler = Reflect.getMetadata('handler', queue)

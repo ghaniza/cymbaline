@@ -23,19 +23,21 @@ export class AController {
         throw new BadRequestException()
     }
 
-    @Middleware(AMiddleware)
     @Get('/b')
+    @Middleware(AMiddleware)
     public withRequestHandlerMiddleware() {
         return { message: 'Success' }
     }
 
-    @Get('/c')
     @Middleware(BMiddleware)
+    @Get('/c')
+    @HttpCode(200)
     public withCustomMiddleware() {
         return { message: 'Success' }
     }
 
     @Post('/a')
+    @Header('some-custom-header', 'some custom value')
     public postEndpoint() {
         return { message: 'You just posted' }
     }
@@ -43,6 +45,7 @@ export class AController {
     @HttpCode(200)
     @Post('/:a/parsed')
     public parsedEndpoint(@Body() body: any, empty: any, @Param('a') param: string, @Query() query: any) {
+        console.log({ body })
         return `This is the body: ${JSON.stringify(body)}, with "a" param: ${param} and query: ${JSON.stringify(query)}`
     }
 

@@ -1,14 +1,14 @@
 import { Queue } from '../../../src/decorators/queue.decorator'
 import { QueueHandler } from '../../../src/decorators/queue-handler.decorator'
-import { MsgId } from '../../../src/decorators/argument.decorator'
-import { AService } from '../a/a.service'
+import { Body, MsgId } from '../../../src/decorators/argument.decorator'
+import { BService } from './b.service'
 
-@Queue('a-queue')
-export class AQueue {
-    constructor(private readonly aService: AService) {}
+@Queue('b-queue')
+export class BQueue {
+    constructor(private readonly bService: BService) {}
 
     @QueueHandler()
-    public async handler(@MsgId() messageId: string) {
-        await this.aService.displayMessage(messageId)
+    public async handler(@MsgId() messageId: string, @Body('message') message) {
+        console.log(await this.bService.sqsMessage(messageId, message))
     }
 }

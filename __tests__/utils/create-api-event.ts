@@ -47,3 +47,41 @@ export const apiEvent = (apiParams: EventApiParams) => {
 
     return params
 }
+
+export type EventSQSParams = {
+    body?: string
+    messageAttributes?: any
+    messageId?: string
+    eventSourceARN?: string
+}
+
+export const DEFAULT_SQS_PARAMS = {
+    messageId: randomUUID(),
+    receiptHandle: 'AQEBwJnKyrHigUMZj6rYigCgxlaS3SLy0a',
+    body: '',
+    attributes: {
+        ApproximateReceiveCount: '1',
+        SentTimestamp: '1545082649183',
+        SenderId: 'AIDAIENQZJOLO23YVJ4VO',
+        ApproximateFirstReceiveTimestamp: '1545082649185',
+    },
+    messageAttributes: {},
+    md5OfBody: '098f6bcd4621d373cade4e832627b4f6',
+    eventSource: 'aws:sqs',
+    eventSourceARN: 'arn:aws:sqs:us-east-2:123456789012:my-test-queue',
+    awsRegion: 'us-east-1',
+}
+
+export const sqsEvent = (events: EventSQSParams[]) => {
+    return {
+        Records: events.map((event) => {
+            const params = DEFAULT_SQS_PARAMS
+            params.body = event.body
+            params.messageAttributes = event.messageAttributes
+            params.eventSourceARN = event.eventSourceARN
+            params.messageId = event.messageId ?? randomUUID()
+
+            return params
+        }),
+    }
+}

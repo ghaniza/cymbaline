@@ -20,6 +20,7 @@
 - [ ] Bypass additional calls
 - [ ] Publish package
 - [ ] GH actions/CI
-- [ ] Trace, Head and Options methods out-of-the-box
 - [ ] Better logging
 - [ ] ORM connectors
+- [ ] SWAGGER middleware
+- [ ] Sentry middleware
