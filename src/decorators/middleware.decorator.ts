@@ -19,28 +19,21 @@ const MethodMiddleware = (target: any, propertyKey: string, middleware: any) => 
     }
 }
 
-const ClassMiddleware = <T extends { new (...args: any[]): {} }>(constructor: T, middleware: any) => {
+const ClassMiddleware = <T extends { new (...args: any[]): {}; uid: string }>(constructor: T, middleware: any) => {
     const mws = Array.isArray(middleware) ? middleware : [middleware]
 
-    if (!constructor.prototype.uid)
-        Object.defineProperty(constructor.prototype, 'uid', {
-            value: randomUUID(),
-        })
+    if (!constructor.uid) constructor.uid = randomUUID()
 
-    if (Reflect.hasMetadata(constructor.prototype.uid + ':middlewares', constructor.prototype, 'middlewares')) {
-        const previous = Reflect.getMetadata(
-            constructor.prototype.uid + ':middlewares',
-            constructor.prototype,
-            'middlewares'
-        )
+    if (Reflect.hasMetadata(constructor.uid + ':middlewares', constructor.prototype, 'middlewares')) {
+        const previous = Reflect.getMetadata(constructor.uid + ':middlewares', constructor.prototype, 'middlewares')
         Reflect.defineMetadata(
-            constructor.prototype.uid + ':middlewares',
+            constructor.uid + ':middlewares',
             [...previous, ...mws],
             constructor.prototype,
             'middlewares'
         )
     } else {
-        Reflect.defineMetadata(constructor.prototype.uid + ':middlewares', mws, constructor.prototype, 'middlewares')
+        Reflect.defineMetadata(constructor.uid + ':middlewares', mws, constructor.prototype, 'middlewares')
     }
 
     return constructor

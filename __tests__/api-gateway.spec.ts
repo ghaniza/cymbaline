@@ -3,7 +3,7 @@ import { apiEvent } from './utils/create-api-event'
 
 describe('Server - API Gateway', () => {
     beforeAll(() => {
-        // delete process.env.DEBUG
+        delete process.env.DEBUG
     })
 
     it('Should get a route with injected class', async () => {

@@ -45,7 +45,6 @@ export class AController {
     @HttpCode(200)
     @Post('/:a/parsed')
     public parsedEndpoint(@Body() body: any, empty: any, @Param('a') param: string, @Query() query: any) {
-        console.log({ body })
         return `This is the body: ${JSON.stringify(body)}, with "a" param: ${param} and query: ${JSON.stringify(query)}`
     }
 

@@ -46,6 +46,22 @@ describe('Server - SQS', () => {
         expect(consoleSpy).toHaveBeenCalledWith('The body is: {"a":"47","b":"hello"}')
     })
 
+    it('Should get response with injected middleware', async () => {
+        const record = {
+            body: 'a=47&b=hello',
+            messageAttributes: {
+                'Content-Type': {
+                    stringValue: 'application/x-www-form-urlencoded',
+                    dataType: 'String',
+                },
+            },
+        }
+        const event = sqsEvent([record])
+        await bQueue(event, null, () => {})
+
+        expect(consoleSpy).toHaveBeenCalledWith('The injected value is: some random whatever')
+    })
+
     it('Should get response without parsed body', async () => {
         const record = {
             body: 'some body',

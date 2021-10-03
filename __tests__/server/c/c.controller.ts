@@ -4,8 +4,8 @@ import { Body } from '../../../src/decorators/argument.decorator'
 import { Middleware } from '../../../src/decorators/middleware.decorator'
 import { CMiddleware } from '../middlewares/c.middleware'
 
-@Middleware(CMiddleware)
 @Controller('/controller-c')
+@Middleware(CMiddleware)
 export class CController {
     @Get('/')
     public async getControllerMiddlewareA(@Body('value') value: string) {

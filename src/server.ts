@@ -128,17 +128,17 @@ export class Server {
     }
 
     private configureControllers() {
-        const controllers: any[] = this.configuration.controllers.map((c) =>
-            container.resolve<typeof c>(c as InjectionToken<Function>)
-        )
+        const controllers: any[] = this.configuration.controllers.map((c) => ({
+            instance: container.resolve<typeof c>(c as InjectionToken<Function>),
+            cls: c,
+        }))
 
-        controllers.forEach((controller) => {
-            this.logger.log('info', `[server] Controller ${controller.controllerName}: Mapped to "${controller.path}"`)
+        controllers.forEach(({ instance, cls }) => {
+            this.logger.log('info', `[server] Controller ${instance.controllerName}: Mapped to "${instance.path}"`)
 
             const router = Router()
 
-            const controllerMiddlewares =
-                Reflect.getMetadata(controller.uid + ':middlewares', controller, 'middlewares') ?? []
+            const controllerMiddlewares = Reflect.getMetadata(cls.uid + ':middlewares', instance, 'middlewares') ?? []
             const middlewares = []
 
             if (controllerMiddlewares?.length) {
@@ -159,9 +159,9 @@ export class Server {
                 })
             }
 
-            Reflect.getMetadataKeys(controller).forEach((key) => {
-                const route = Reflect.getMetadata(key, controller)
-                if (controller.path === '/') controller.path = ''
+            Reflect.getMetadataKeys(instance).forEach((key) => {
+                const route = Reflect.getMetadata(key, instance)
+                if (instance.path === '/') instance.path = ''
 
                 let localMiddlewares = []
 
@@ -179,7 +179,7 @@ export class Server {
                     })
 
                 router[route.method](
-                    controller.path + route.path,
+                    instance.path + route.path,
                     [...middlewares, ...localMiddlewares],
                     async (req: Request, res: Response, next: NextFunction) => {
                         try {
@@ -187,7 +187,7 @@ export class Server {
                                 res.setHeader(header, value)
                             })
                             const args = this.getArgumentsByType(route.arguments, req, res)
-                            const response = await route.handler.bind(controller)(...args)
+                            const response = await route.handler.bind(instance)(...args)
 
                             if (route.arguments.find((a) => a && a?.type === 'res' && a?.skip)) return next()
                             return res.status(route.httpCode).send(response)
@@ -254,30 +254,50 @@ export class Server {
 
     private initSQS(queueId: string, event: SQSEvent) {
         let queue: any
+        let QueueClass: any
         this.configuration.queues.forEach((q) => {
             if (queue) return
             const instance: any = container.resolve(q as any)
-            if (instance.queueId === queueId) queue = instance
+            if (instance.queueId === queueId) {
+                queue = instance
+                QueueClass = q
+            }
         })
 
         if (!queue) throw new Error(`Queue not found: "${queueId}"`)
 
         const queueHandler = Reflect.getMetadata('handler', queue)
+        const middlewares = []
+        this.configuration.middlewares.forEach((mw) => {
+            if (mw.prototype instanceof CustomMiddleware) {
+                const middleware = container.resolve<CustomMiddleware>(mw as any)
+                middlewares.push(middleware.configure.bind(middleware))
+            }
+        })
+
+        const queueMiddlewares = Reflect.getMetadata(QueueClass.uid + ':middlewares', queue, 'middlewares')
+
+        if (queueMiddlewares?.length) {
+            queueMiddlewares.forEach((mw) => {
+                if (mw.prototype instanceof CustomMiddleware) {
+                    const middleware = container.resolve<CustomMiddleware>(mw as any)
+                    middlewares.push(middleware.configure.bind(middleware))
+                }
+            })
+        }
 
         return Promise.all(
             event.Records.map(async (record) => {
-                const args = this.getArgumentsByEvent(queueHandler.arguments, record)
-
                 await Promise.all(
-                    this.configuration.middlewares.map(async (mw) => {
-                        if (!(mw instanceof CustomMiddleware)) return
-                        const middleware = container.resolve<CustomMiddleware>(mw as any)
-
-                        await middleware.configure.bind(middleware)({ record })
+                    middlewares.map((mw) => {
+                        return mw({ record })
                     })
                 ).catch((e) => {
                     this.logger.log('error', e.message)
                 })
+
+                const args = this.getArgumentsByEvent(queueHandler.arguments, record)
+
                 return queueHandler.handler.bind(queue)(...args)
             })
         )
