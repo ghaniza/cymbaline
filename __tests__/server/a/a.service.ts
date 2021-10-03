@@ -7,7 +7,6 @@ export class AService {
     }
 
     public async displayMessage(id: string) {
-        const message = Promise.resolve('The ID is ' + id)
-        console.log(message)
+        return Promise.resolve('The ID is ' + id)
     }
 }

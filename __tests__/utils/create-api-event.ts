@@ -1,8 +1,7 @@
-import template from './apiEvent.json'
 import { randomUUID } from 'crypto'
 
 export type EventApiParams = {
-    method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'OPTIONS' | 'HEAD'
+    method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'OPTIONS' | 'HEAD' | 'TRACE'
     path: string
     stage?: string
     queryString?: { [key: string]: any }

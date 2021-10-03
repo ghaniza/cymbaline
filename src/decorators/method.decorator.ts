@@ -8,6 +8,7 @@ const MethodDecorator = (method: string, path: string, httpCode: number) => {
             handler: descriptor.value,
             arguments: [],
             middlewares: [],
+            headers: [],
         }
 
         if (Reflect.hasMetadata(propertyKey, target)) {
@@ -26,3 +27,4 @@ export const Patch = (path: string, httpCode: number = 200) => MethodDecorator('
 export const Delete = (path: string, httpCode: number = 200) => MethodDecorator('delete', path, httpCode)
 export const Options = (path: string, httpCode: number = 204) => MethodDecorator('options', path, httpCode)
 export const Head = (path: string, httpCode: number = 200) => MethodDecorator('head', path, httpCode)
+export const Trace = (path: string, httpCode: number = 200) => MethodDecorator('trace', path, httpCode)

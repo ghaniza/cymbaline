@@ -3,7 +3,7 @@ import { apiEvent } from './utils/create-api-event'
 
 describe('Server - API Gateway', () => {
     beforeAll(() => {
-        delete process.env.DEBUG
+        // delete process.env.DEBUG
     })
 
     it('Should get a route with injected class', async () => {
@@ -30,6 +30,31 @@ describe('Server - API Gateway', () => {
         expect(response.body).toEqual(JSON.stringify({ message: 'You just posted' }))
     })
 
+    it('Should have a custom header', async () => {
+        const response = await handler(apiEvent({ path: '/by-id/123456', method: 'GET' }))
+
+        expect(response.statusCode).toEqual(200)
+        expect(response.headers['content-type'].startsWith('text/html')).toBeTruthy()
+        expect(response.headers['custom-header']).toEqual('custom value')
+        expect(response.body).toEqual('The ID is 123456')
+    })
+
+    it('Should get a parsed value', async () => {
+        const queryString = { token: 'supersecret' }
+        const body = JSON.stringify({ a: 1, b: '2' })
+        const headers = { 'Content-Type': 'application/json' }
+
+        const response = await handler(apiEvent({ path: '/abc123/parsed', method: 'POST', queryString, body, headers }))
+
+        expect(response.statusCode).toEqual(200)
+        expect(response.headers['content-type'].startsWith('text/html')).toBeTruthy()
+        expect(response.body).toEqual(
+            `This is the body: ${body}, with "a" param: abc123 and query: ${JSON.stringify({
+                token: 'supersecret',
+            })}`
+        )
+    })
+
     it('Should get with RequestHandler injection', async () => {
         const response = await handler(apiEvent({ path: '/b', method: 'GET' }))
 
@@ -54,6 +79,51 @@ describe('Server - API Gateway', () => {
         expect(response.statusCode).toEqual(200)
         expect(response.headers['content-type'].startsWith('application/json')).toBeTruthy()
         expect(response.body).toEqual(JSON.stringify({ message: 'Hello from another controller!' }))
+    })
+
+    it('Should put successfully', async () => {
+        const response = await handler(apiEvent({ path: '/other', method: 'PUT' }))
+
+        expect(response.statusCode).toEqual(200)
+        expect(response.headers['content-type'].startsWith('application/json')).toBeTruthy()
+        expect(response.body).toEqual(JSON.stringify({ message: 'Hello from PUT method' }))
+    })
+
+    it('Should patch successfully', async () => {
+        const response = await handler(apiEvent({ path: '/other', method: 'PATCH' }))
+
+        expect(response.statusCode).toEqual(200)
+        expect(response.headers['content-type'].startsWith('application/json')).toBeTruthy()
+        expect(response.body).toEqual(JSON.stringify({ message: 'Hello from PATCH method' }))
+    })
+
+    it('Should delete successfully', async () => {
+        const response = await handler(apiEvent({ path: '/other', method: 'DELETE' }))
+
+        expect(response.statusCode).toEqual(200)
+        expect(response.headers['content-type'].startsWith('application/json')).toBeTruthy()
+        expect(response.body).toEqual(JSON.stringify({ message: 'Hello from DELETE method' }))
+    })
+
+    it('Should options successfully', async () => {
+        const response = await handler(apiEvent({ path: '/other', method: 'OPTIONS' }))
+
+        expect(response.statusCode).toEqual(204)
+        expect(response.body).toEqual('')
+    })
+
+    it('Should head successfully', async () => {
+        const response = await handler(apiEvent({ path: '/other', method: 'HEAD' }))
+
+        expect(response.statusCode).toEqual(200)
+        expect(response.body).toEqual('')
+    })
+
+    it('Should trace successfully', async () => {
+        const response = await handler(apiEvent({ path: '/other', method: 'TRACE' }))
+
+        expect(response.statusCode).toEqual(200)
+        expect(response.body).toEqual('')
     })
 
     it('Should process data', async () => {

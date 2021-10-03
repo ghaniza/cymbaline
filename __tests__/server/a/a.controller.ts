@@ -7,6 +7,7 @@ import { AMiddleware } from '../middlewares/a.middleware'
 import { Middleware } from '../../../src/decorators/middleware.decorator'
 import { Header } from '../../../src/decorators/header.decorator'
 import { BMiddleware } from '../middlewares/b.middleware'
+import { HttpCode } from '../../../src/decorators/http-code.decorator'
 
 @Controller('/')
 export class AController {
@@ -39,6 +40,7 @@ export class AController {
         return { message: 'You just posted' }
     }
 
+    @HttpCode(200)
     @Post('/:a/parsed')
     public parsedEndpoint(@Body() body: any, empty: any, @Param('a') param: string, @Query() query: any) {
         return `This is the body: ${JSON.stringify(body)}, with "a" param: ${param} and query: ${JSON.stringify(query)}`
@@ -46,7 +48,7 @@ export class AController {
 
     @Header('custom-header', 'custom value')
     @Get('/by-id/:id')
-    public getId(@Param('id') id: string, @Query('token') token: string) {
-        return `The param is ${id} and the query value of token is: ${token}`
+    public getId(@Param('id') id: string) {
+        return this.aService.displayMessage(id)
     }
 }

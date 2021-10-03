@@ -8,7 +8,7 @@ import { APIGatewayEvent, Callback, Context, SQSEvent, SQSRecord } from 'aws-lam
 
 type ServerConfigurationOptions = {
     dependencies: ((...args: any[]) => Promise<any> | any)[]
-    middlewares: (RequestHandler | CustomMiddleware)[]
+    middlewares: (RequestHandler | { new (): CustomMiddleware })[]
     controllers: Function[]
     queues: Function[]
 }
@@ -31,6 +31,7 @@ export class Server {
 
     constructor(private readonly configuration: ServerConfigurationOptions, options?: ServerOptions) {
         this.app = express()
+        this.loadGlobalMiddlewares()
 
         if (options) {
             if (options?.logger) {
@@ -52,11 +53,11 @@ export class Server {
     }
 
     private loadGlobalMiddlewares() {
-        this.configuration.middlewares.forEach((mw) => {
-            if (mw instanceof CustomMiddleware) {
-                const middleware = container.resolve<CustomMiddleware>(mw as any)
+        this.configuration.middlewares.forEach((middleware) => {
+            if (middleware.prototype instanceof CustomMiddleware) {
+                const mw = container.resolve<CustomMiddleware>(middleware as any)
                 this.app.use(async (request: Request, response: Response, next: NextFunction) => {
-                    await middleware.configure.bind(middleware)({
+                    await mw.configure.bind(mw)({
                         request,
                         response,
                     })
@@ -64,7 +65,7 @@ export class Server {
                     next()
                 })
             } else {
-                this.app.use(mw)
+                this.app.use(middleware as RequestHandler)
             }
         })
     }
@@ -158,6 +159,9 @@ export class Server {
                     ...middlewares,
                     async (req: Request, res: Response, next: NextFunction) => {
                         try {
+                            route.headers.forEach(([header, value]) => {
+                                res.setHeader(header, value)
+                            })
                             const args = this.getArgumentsByType(route.arguments, req, res)
                             const response = await route.handler.bind(controller)(...args)
 
@@ -215,7 +219,6 @@ export class Server {
             next()
         })
 
-        this.loadGlobalMiddlewares()
         await this.configureDependencies()
         this.configureControllers()
 
