@@ -1,14 +1,10 @@
-import 'reflect-metadata';
-import {injectable} from "tsyringe";
-import {Server} from "./server";
-import {config} from "dotenv";
+import 'reflect-metadata'
+import { injectable } from 'tsyringe'
+import { Server } from './server'
+import { config } from 'dotenv'
 
 config()
 
-export {
-    injectable as Injectable,
-}
+export { injectable as Injectable }
 
-export default Server;
-
-import './__tests__/a.module'
+export default Server

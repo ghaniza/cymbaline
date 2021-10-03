@@ -7,11 +7,12 @@
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "declaration": true,
-    "target": "es2019",
+    "target": "esnext",
     "sourceMap": true,
     "baseUrl": "./src",
     "outDir": "./lib",
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "resolveJsonModule": true
   },
   "compileOnSave": true,
   "ts-node": {

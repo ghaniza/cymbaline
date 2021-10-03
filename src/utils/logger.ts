@@ -1,17 +1,19 @@
-import {Logger} from "../server";
-import chalk from "chalk";
+import { Logger } from '../server'
+import chalk from 'chalk'
 
 export class DefaultLogger implements Logger {
-    log(level: "debug" | "info" | "warn" | "error", args: any): void {
-        let color: string;
+    log(level: 'debug' | 'info' | 'warn' | 'error', args: any): void {
+        if (!process.env.DEBUG) return
 
-        switch(level) {
+        let color: string
+
+        switch (level) {
             case 'error':
-                color = 'red';
-                break;
+                color = 'red'
+                break
             case 'warn':
                 color = 'yellow'
-                break;
+                break
             default:
                 color = 'white'
         }

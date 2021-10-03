@@ -1,32 +1,15 @@
-const HttpCode = (httpCode: number) => {
+export const HttpCode = (httpCode: number) => {
     return (target: any, propertyKey: string) => {
-        console.log({ type: 'code', target, propertyKey })
+        if (Reflect.hasMetadata(propertyKey, target)) {
+            const value = Reflect.getMetadata(propertyKey, target)
+            Reflect.defineMetadata(propertyKey, { ...value, httpCode }, target)
+        } else {
+            const data = {
+                propertyKey,
+                httpCode,
+            }
 
-        if (!target?.router)
-            Object.defineProperty(target, 'router', {
-                configurable: true,
-                get: () => {
-                    return [{
-                        propertyName: propertyKey,
-                        httpCode,
-                    }]
-                },
-            })
-        else {
-            const previousRoute = target.router.find(r => r.propertyName === propertyKey);
-            const routes = target.router.filter(r => r.propertyName !== propertyKey)
-
-            Object.defineProperty(target, 'router', {
-                configurable: true,
-                get: () => {
-                    return [
-                        ...routes,
-                        {
-                            ...previousRoute,
-                            httpCode,
-                        }]
-                },
-            })
+            Reflect.defineMetadata(propertyKey, data, target)
         }
     }
 }

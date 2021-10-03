@@ -6,12 +6,13 @@ const MethodDecorator = (method: string, path: string, httpCode: number) => {
             path,
             httpCode,
             handler: descriptor.value,
-            arguments: []
+            arguments: [],
+            middlewares: [],
         }
 
-        if(Reflect.hasMetadata(propertyKey, target)) {
-            const route = Reflect.getMetadata(propertyKey, target);
-            Reflect.defineMetadata(propertyKey, {...data, ...route}, target)
+        if (Reflect.hasMetadata(propertyKey, target)) {
+            const route = Reflect.getMetadata(propertyKey, target)
+            Reflect.defineMetadata(propertyKey, { ...data, ...route }, target)
         } else {
             Reflect.defineMetadata(propertyKey, data, target)
         }

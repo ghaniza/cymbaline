@@ -1,31 +1,22 @@
-import {RequestHandler} from "express";
+import { RequestHandler } from 'express'
+import { CustomMiddleware } from '../middlewares'
 
-export const Middleware = (middleware: RequestHandler | RequestHandler[]) => {
-    return (target: any, propertyName: string, descriptor: PropertyDescriptor) => {
-        console.log({ type: 'middleware', target, propertyName, descriptor })
+export const Middleware = (
+    middleware: RequestHandler | RequestHandler[] | { new (): CustomMiddleware } | { new (): CustomMiddleware }[]
+) => {
+    return (target: any, propertyKey: string) => {
+        const mws = Array.isArray(middleware) ? middleware : [middleware]
 
-        if(!target.middlewares) {
-            Object.defineProperty(target, 'middlewares', {
-                configurable: true,
-                get: () => {
-                    if(!Array.isArray(middleware))
-                        return [{ propertyName, middleware }]
-                    return [{ propertyName, middleware: [ middleware ] }]
-                },
-                set: () => {},
-            })
+        if (Reflect.hasMetadata(propertyKey, target)) {
+            const value = Reflect.getMetadata(propertyKey, target)
+            Reflect.defineMetadata(propertyKey, { ...value, middlewares: [...value.middlewares, ...mws] }, target)
         } else {
-            const middlewares = target.middlewares
+            const data = {
+                propertyKey,
+                middlewares: mws,
+            }
 
-            Object.defineProperty(target, 'middlewares', {
-                configurable: true,
-                get: () => {
-                    if(!Array.isArray(middleware))
-                        return [...middlewares, { propertyName, middleware }]
-                    return [...middlewares, { propertyName, middleware: [ middleware ] }]
-                },
-                set: () => {},
-            })
+            Reflect.defineMetadata(propertyKey, data, target)
         }
     }
 }

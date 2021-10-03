@@ -1,24 +1,24 @@
 export const Header = (header: string, value: string) => {
-    return (target: any, propertyName: string) => {
-        if(!target.headers) {
-            Object.defineProperty(target, 'headers', {
-                configurable: true,
-                get: () => {
-                    return [{ header, value }]
+    return (target: any, propertyKey: string) => {
+        if (Reflect.hasMetadata(propertyKey, target)) {
+            const value = Reflect.getMetadata(propertyKey, target)
+            Reflect.defineMetadata(
+                propertyKey,
+                {
+                    ...value,
+                    headers: { ...value.headers, ...{ [header]: value } },
                 },
-                set: () => {}
-            })
+                target
+            )
         } else {
-            const headers = target.headers
-
-            Object.defineProperty(target, 'headers', {
-                configurable: true,
-                get: () => {
-                    return [...headers, { header, value }]
+            const data = {
+                propertyKey,
+                headers: {
+                    [header]: value,
                 },
-                set: () => {}
-            })
+            }
 
+            Reflect.defineMetadata(propertyKey, data, target)
         }
     }
 }
