@@ -1,4 +1,4 @@
-Roadmap
+#Roadmap
 
 - [x] Create server class
 - [x] Controller decorator
@@ -7,4 +7,19 @@ Roadmap
 - [x] Add middlewares & plugins
 - [x] Logger
 - [ ] Transcribe lambda event
-- [ ] Custom property decorators
+- [x] Custom property decorators
+- [ ] Create `README`
+- [ ] Test queue handlers
+- [ ] Add `serverless`
+- [ ] Automatic `serverless` config creation
+- [ ] Append configuration to `package.json`
+- [ ] Delete from queue option
+- [ ] Additional modules
+- [ ] Expose API to `CustomMiddleware` interface
+- [ ] Refactor
+- [ ] Bypass additional calls
+- [ ] Publish package
+- [ ] GH actions/CI
+- [ ] Trace, Head and Options methods out-of-the-box
+- [ ] Better logging
+- [ ] ORM connectors
