@@ -10,8 +10,8 @@ export const Queue = (id: string, options?: QueueOptions) => {
         @injectable()
         class QueueClass extends constructor {
             static uid = constructor.uid ?? randomUUID()
+            static queueId = id
             constructorName = constructor.name
-            queueId = id
             middlewares = []
             deleteOnSuccess = options?.deleteMessageOnSuccess ?? false
         }

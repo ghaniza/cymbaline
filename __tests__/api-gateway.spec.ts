@@ -1,4 +1,4 @@
-import { handler } from './server'
+import server from './server'
 import { apiEvent } from './utils/create-api-event'
 
 describe('Server - API Gateway', () => {
@@ -7,7 +7,7 @@ describe('Server - API Gateway', () => {
     })
 
     it('Should get a route with injected class', async () => {
-        const response = await handler(apiEvent({ path: '/service', method: 'GET' }))
+        const response = await server.apiHandler(apiEvent({ path: '/service', method: 'GET' }))
 
         expect(response.statusCode).toEqual(200)
         expect(response.headers['content-type'].startsWith('text')).toBeTruthy()
@@ -15,7 +15,7 @@ describe('Server - API Gateway', () => {
     })
 
     it('Should get a route', async () => {
-        const response = await handler(apiEvent({ path: '/a', method: 'GET' }))
+        const response = await server.apiHandler(apiEvent({ path: '/a', method: 'GET' }))
 
         expect(response.statusCode).toEqual(400)
         expect(response.headers['content-type'].startsWith('application/json')).toBeTruthy()
@@ -23,7 +23,7 @@ describe('Server - API Gateway', () => {
     })
 
     it('Should post to a route', async () => {
-        const response = await handler(apiEvent({ path: '/a', method: 'POST' }))
+        const response = await server.apiHandler(apiEvent({ path: '/a', method: 'POST' }))
 
         expect(response.statusCode).toEqual(201)
         expect(response.headers['content-type'].startsWith('application/json')).toBeTruthy()
@@ -31,7 +31,7 @@ describe('Server - API Gateway', () => {
     })
 
     it('Should have a custom header', async () => {
-        const response = await handler(apiEvent({ path: '/by-id/123456', method: 'GET' }))
+        const response = await server.apiHandler(apiEvent({ path: '/by-id/123456', method: 'GET' }))
 
         expect(response.statusCode).toEqual(200)
         expect(response.headers['content-type'].startsWith('text/html')).toBeTruthy()
@@ -44,7 +44,9 @@ describe('Server - API Gateway', () => {
         const body = JSON.stringify({ a: 1, b: '2' })
         const headers = { 'Content-Type': 'application/json' }
 
-        const response = await handler(apiEvent({ path: '/abc123/parsed', method: 'POST', queryString, body, headers }))
+        const response = await server.apiHandler(
+            apiEvent({ path: '/abc123/parsed', method: 'POST', queryString, body, headers })
+        )
 
         expect(response.statusCode).toEqual(200)
         expect(response.headers['content-type'].startsWith('text/html')).toBeTruthy()
@@ -55,8 +57,8 @@ describe('Server - API Gateway', () => {
         )
     })
 
-    it('Should get with RequestHandler injection', async () => {
-        const response = await handler(apiEvent({ path: '/b', method: 'GET' }))
+    it('Should get with ResponseHandler injection', async () => {
+        const response = await server.apiHandler(apiEvent({ path: '/b', method: 'GET' }))
 
         expect(response.statusCode).toEqual(200)
         expect(response.headers['content-type'].startsWith('application/json')).toBeTruthy()
@@ -65,7 +67,7 @@ describe('Server - API Gateway', () => {
     })
 
     it('Should get route with CustomMiddleware injection', async () => {
-        const response = await handler(apiEvent({ path: '/c', method: 'GET' }))
+        const response = await server.apiHandler(apiEvent({ path: '/c', method: 'GET' }))
 
         expect(response.statusCode).toEqual(200)
         expect(response.headers['content-type'].startsWith('application/json')).toBeTruthy()
@@ -74,7 +76,7 @@ describe('Server - API Gateway', () => {
     })
 
     it('Should get from another controller', async () => {
-        const response = await handler(apiEvent({ path: '/other', method: 'GET' }))
+        const response = await server.apiHandler(apiEvent({ path: '/other', method: 'GET' }))
 
         expect(response.statusCode).toEqual(200)
         expect(response.headers['content-type'].startsWith('application/json')).toBeTruthy()
@@ -82,7 +84,7 @@ describe('Server - API Gateway', () => {
     })
 
     it('Should put successfully', async () => {
-        const response = await handler(apiEvent({ path: '/other', method: 'PUT' }))
+        const response = await server.apiHandler(apiEvent({ path: '/other', method: 'PUT' }))
 
         expect(response.statusCode).toEqual(200)
         expect(response.headers['content-type'].startsWith('application/json')).toBeTruthy()
@@ -90,7 +92,7 @@ describe('Server - API Gateway', () => {
     })
 
     it('Should patch successfully', async () => {
-        const response = await handler(apiEvent({ path: '/other', method: 'PATCH' }))
+        const response = await server.apiHandler(apiEvent({ path: '/other', method: 'PATCH' }))
 
         expect(response.statusCode).toEqual(200)
         expect(response.headers['content-type'].startsWith('application/json')).toBeTruthy()
@@ -98,7 +100,7 @@ describe('Server - API Gateway', () => {
     })
 
     it('Should delete successfully', async () => {
-        const response = await handler(apiEvent({ path: '/other', method: 'DELETE' }))
+        const response = await server.apiHandler(apiEvent({ path: '/other', method: 'DELETE' }))
 
         expect(response.statusCode).toEqual(200)
         expect(response.headers['content-type'].startsWith('application/json')).toBeTruthy()
@@ -106,28 +108,28 @@ describe('Server - API Gateway', () => {
     })
 
     it('Should options successfully', async () => {
-        const response = await handler(apiEvent({ path: '/other', method: 'OPTIONS' }))
+        const response = await server.apiHandler(apiEvent({ path: '/other', method: 'OPTIONS' }))
 
         expect(response.statusCode).toEqual(204)
         expect(response.body).toEqual('')
     })
 
     it('Should head successfully', async () => {
-        const response = await handler(apiEvent({ path: '/other', method: 'HEAD' }))
+        const response = await server.apiHandler(apiEvent({ path: '/other', method: 'HEAD' }))
 
         expect(response.statusCode).toEqual(200)
         expect(response.body).toEqual('')
     })
 
     it('Should trace successfully', async () => {
-        const response = await handler(apiEvent({ path: '/other', method: 'TRACE' }))
+        const response = await server.apiHandler(apiEvent({ path: '/other', method: 'TRACE' }))
 
         expect(response.statusCode).toEqual(200)
         expect(response.body).toEqual('')
     })
 
     it('Should get controller middleware injection', async () => {
-        const response = await handler(
+        const response = await server.apiHandler(
             apiEvent({
                 path: '/controller-c',
                 method: 'GET',
@@ -142,7 +144,7 @@ describe('Server - API Gateway', () => {
     })
 
     it('Should get controller middleware injection from other method', async () => {
-        const response = await handler(
+        const response = await server.apiHandler(
             apiEvent({
                 path: '/controller-c',
                 method: 'POST',
@@ -163,7 +165,7 @@ describe('Server - API Gateway', () => {
             c: 1,
         }
 
-        const response = await handler(apiEvent({ path: '/other/processed', method: 'GET', queryString }))
+        const response = await server.apiHandler(apiEvent({ path: '/other/processed', method: 'GET', queryString }))
 
         expect(response.statusCode).toEqual(200)
         expect(response.headers['content-type'].startsWith('application/json')).toBeTruthy()

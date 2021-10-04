@@ -14,6 +14,8 @@ const server = new Server({
     queues: [BQueue, AQueue],
 })
 
-export const handler = server.getApiHandler()
-export const aQueue = server.getQueueHandler('a-queue')
-export const bQueue = server.getQueueHandler('b-queue')
+// export const handler = server.getApiHandler()
+// export const aQueue = server.getQueueHandler('a-queue')
+// export const bQueue = server.getQueueHandler('b-queue')
+
+export default server.exportHandlers()

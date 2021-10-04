@@ -10,8 +10,8 @@ import qs from 'qs'
 type ServerConfigurationOptions = {
     dependencies: ((...args: any[]) => Promise<any> | any)[]
     middlewares: (RequestHandler | { new (): CustomMiddleware })[]
-    controllers: Function[]
-    queues: Function[]
+    controllers: { new (...args: any[]): any }[]
+    queues: { new (...args: any[]): any }[]
 }
 
 export interface Logger {
@@ -129,7 +129,7 @@ export class Server {
 
     private configureControllers() {
         const controllers: any[] = this.configuration.controllers.map((c) => ({
-            instance: container.resolve<typeof c>(c as InjectionToken<Function>),
+            instance: container.resolve<typeof c>(c as any),
             cls: c,
         }))
 
@@ -258,7 +258,7 @@ export class Server {
         this.configuration.queues.forEach((q) => {
             if (queue) return
             const instance: any = container.resolve(q as any)
-            if (instance.queueId === queueId) {
+            if ((q as any).queueId === queueId) {
                 queue = instance
                 QueueClass = q
             }
@@ -335,5 +335,18 @@ export class Server {
                 return callback(e)
             }
         }
+    }
+
+    public exportHandlers(options?: { context?: Partial<Context> }): { [handledName: string]: Function } {
+        const exports: any = {}
+        if (this.configuration.controllers.length) exports.apiHandler = this.getApiHandler(options)
+
+        if (this.configuration.queues.length) {
+            this.configuration.queues.forEach((queue) => {
+                exports[(queue as any).queueId] = this.getQueueHandler((queue as any).queueId)
+            })
+        }
+
+        return exports
     }
 }

@@ -6,7 +6,7 @@ import { Middleware } from '../../../src/decorators/middleware.decorator'
 import { BQueueMiddleware } from '../middlewares/b.middleware'
 
 @Middleware(BQueueMiddleware)
-@Queue('b-queue')
+@Queue('bQueue')
 export class BQueue {
     constructor(private readonly bService: BService) {}
 

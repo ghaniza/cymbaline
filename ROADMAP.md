@@ -9,7 +9,7 @@
 - [ ] Transcribe lambda event
 - [x] Custom property decorators
 - [ ] Create `README`
-- [ ] Test queue handlers
+- [x] Test queue handlers
 - [ ] Add `serverless`
 - [ ] Automatic `serverless` config creation
 - [ ] Append configuration to `package.json`
@@ -20,7 +20,9 @@
 - [ ] Bypass additional calls
 - [ ] Publish package
 - [ ] GH actions/CI
-- [ ] Better logging
+- [x] Better logging
 - [ ] ORM connectors
 - [ ] SWAGGER middleware
 - [ ] Sentry middleware
+- [ ] Validation
+- [ ] Response serialization
