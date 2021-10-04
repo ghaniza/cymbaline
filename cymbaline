@@ -1,0 +1,20 @@
+#!/usr/bin/env node
+
+const exec = require('child_process');
+
+(function() {
+  const [ nodePath, cwd, ...args ] = process.argv;
+
+  const options = args.map((arg, i) => {
+    if(arg.startsWith('--')) {
+      if(args.length === i + 1) throw new Error('Argument value not specified: ' + arg)
+      return {
+        [arg.substr(2)]: args[i + 1]
+      }
+    }
+  })
+    .reduce((p, c) => ({...p, ...c}), {})
+
+  exec.spawn('tsc ' + options.path + ' -p ' + cwd)
+
+})();

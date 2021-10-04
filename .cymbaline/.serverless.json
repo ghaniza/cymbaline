@@ -1,0 +1,1 @@
+{"service":"cymbaline","functions":{},"package":{"individually":true,"patterns":["src/__tests__/**",".idea/**","serverless-configs/**","envs/**","support/**","node_modules/.cache/**","node_modules/aws-lambda/**",".env.*",".env"]}}

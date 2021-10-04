@@ -2,7 +2,7 @@
   "name": "cymbaline",
   "version": "0.1.0",
   "description": "HTTP services wrapper for cloud",
-  "main": "lib/index.js",
+  "main": "cli/index.js",
   "scripts": {
     "test": "jest",
     "start": "npx tsc && node lib/index.js",
@@ -66,6 +66,7 @@
     "@aws-sdk/client-sqs": "^3.34.0",
     "aws-sdk": "^2.996.0",
     "chalk": "^2.4.2",
+    "commander": "^4.1.1",
     "dotenv": "^10.0.0",
     "ejs": "^3.1.6",
     "express": "^4.17.1",

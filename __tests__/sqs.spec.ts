@@ -2,7 +2,7 @@ import { sqsEvent } from './utils/create-api-event'
 import server from './server'
 import { randomUUID } from 'crypto'
 
-describe('Server - SQS', () => {
+describe.skip('Server - SQS', () => {
     let consoleSpy: jest.SpyInstance
 
     beforeAll(() => {
