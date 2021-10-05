@@ -1,4 +1,4 @@
-import { container, InjectionToken } from 'tsyringe'
+import { container } from 'tsyringe'
 import express, { Express, RequestHandler, Router, Response, Request, NextFunction } from 'express'
 import { CustomMiddleware } from './middlewares'
 import { DefaultLogger } from './utils/logger'
@@ -6,6 +6,9 @@ import { HTTPException } from './exceptions/http.exception'
 import ServerlessHttp from 'serverless-http'
 import { APIGatewayEvent, Callback, Context, SQSEvent, SQSRecord } from 'aws-lambda'
 import qs from 'qs'
+import path from 'path'
+import fs from 'fs'
+import { Serverless } from './utils/serverless'
 
 type ServerConfigurationOptions = {
     dependencies: ((...args: any[]) => Promise<any> | any)[]
@@ -29,6 +32,7 @@ export class Server {
     private readonly app: Express
     private readonly logger: Logger = new DefaultLogger()
     private readonly errorHandler: ErrorHandler = HTTPException.handler
+    private metadataDir = path.resolve('.cymbaline')
 
     constructor(private readonly configuration: ServerConfigurationOptions, options?: ServerOptions) {
         this.app = express()
@@ -337,15 +341,44 @@ export class Server {
         }
     }
 
-    public exportHandlers(options?: { context?: Partial<Context> }): { [handledName: string]: Function } {
+    public exportHandlers(options?: { context?: Partial<Context> }): { [handlerName: string]: Function } {
+        if (!fs.existsSync(this.metadataDir)) fs.mkdirSync(this.metadataDir)
         const exports: any = {}
-        if (this.configuration.controllers.length) exports.apiHandler = this.getApiHandler(options)
+        const serverless = new Serverless()
+
+        if (this.configuration.controllers.length) {
+            exports.apiHandler = this.getApiHandler(options)
+
+            serverless.addFunction('apiHandler', {
+                handler: 'dist/index.apiHandler',
+                memorySize: 1024,
+                timeout: 6,
+                events: {
+                    http: 'ANY /{proxy+}',
+                },
+            })
+        }
 
         if (this.configuration.queues.length) {
             this.configuration.queues.forEach((queue) => {
-                exports[(queue as any).queueId] = this.getQueueHandler((queue as any).queueId)
+                const name = (queue as any).queueId
+                const q = container.resolve<any>(queue as any)
+
+                exports[name] = this.getQueueHandler(name)
+
+                serverless.addFunction(name, {
+                    handler: 'dist/index.' + name,
+                    memorySize: 1024,
+                    timeout: 6,
+                    events: {
+                        sqs: q.queueARN,
+                    },
+                })
             })
         }
+
+        serverless.saveMetadata(this.metadataDir)
+        this.logger.log('info', '[server] Server metadata updated')
 
         return exports
     }

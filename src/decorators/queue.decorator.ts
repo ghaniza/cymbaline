@@ -3,8 +3,9 @@ import { randomUUID } from 'crypto'
 
 export type QueueOptions = {
     deleteMessageOnSuccess?: boolean
-    memorySizeInMB: number
-    timeoutInSeconds: number
+    queueARN?: string
+    memorySizeInMB?: number
+    timeoutInSeconds?: number
 }
 
 export const Queue = (id: string, options?: QueueOptions) => {
@@ -16,8 +17,9 @@ export const Queue = (id: string, options?: QueueOptions) => {
             constructorName = constructor.name
             middlewares = []
             deleteOnSuccess = options?.deleteMessageOnSuccess ?? false
-            timeout = 6
-            memorySize = 1024
+            timeout = options?.timeoutInSeconds ?? 6
+            memorySize = options?.memorySizeInMB ?? 1024
+            queueARN = options?.queueARN ?? process.env[id + '_ARN']
         }
 
         return QueueClass

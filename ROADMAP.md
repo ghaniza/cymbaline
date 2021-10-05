@@ -26,3 +26,4 @@
 - [ ] Sentry middleware
 - [ ] Validation
 - [ ] Response serialization
+- [ ] Exclude `devDependencies` from `babel-loader`

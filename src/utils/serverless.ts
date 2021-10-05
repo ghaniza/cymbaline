@@ -43,8 +43,8 @@ export class Serverless {
     provider: ProviderOptions = DEFAULT_PROVIDER_OPTIONS
 
     constructor() {
-        const filePath = path.resolve(process.cwd(), 'package.json')
-        const info = require(filePath)
+        const filePath = path.resolve('package.json')
+        const info = JSON.parse(fs.readFileSync(filePath).toString())
 
         this.service = info.name
     }
@@ -58,12 +58,9 @@ export class Serverless {
         }
     }
 
-    public async publish(stage?: string) {
-        fs.mkdirSync(path.resolve(process.cwd(), '.cymbaline'))
-        const filePath = path.resolve(process.cwd(), '.cymbaline', '.serverless.json')
-
+    public saveMetadata(metadataDir: string) {
+        const filePath = path.resolve(metadataDir, '.serverless.json')
         fs.writeFileSync(filePath, JSON.stringify(this.toObject()))
-        return filePath
     }
 
     toObject() {

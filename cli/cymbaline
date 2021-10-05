@@ -1,0 +1,24 @@
+#!/usr/bin/env node
+
+const { execSync } = require('child_process');
+
+(function() {
+  try {
+    const [ nodePath, cwd, ...args ] = process.argv;
+
+    const options = args.map((arg, i) => {
+      if(arg.startsWith('--')) {
+        if(args.length === i + 1) throw new Error('Argument value not specified: ' + arg)
+        return {
+          [arg.substr(2)]: args[i + 1]
+        }
+      }
+    })
+      .reduce((p, c) => ({...p, ...c}), {})
+
+    execSync('cd ' + options.path)
+    execSync('npx tsc -m commonjs -t es5 --lib esnext --outDir lib --declarationMap true --declaration true --esModuleInterop true')
+  } catch(e) {
+    console.log(e.toString())
+  }
+})();

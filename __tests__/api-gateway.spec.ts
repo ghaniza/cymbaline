@@ -1,7 +1,7 @@
 import server from './server'
 import { apiEvent } from './utils/create-api-event'
 
-describe.skip('Server - API Gateway', () => {
+describe('Server - API Gateway', () => {
     beforeAll(() => {
         delete process.env.DEBUG
     })
