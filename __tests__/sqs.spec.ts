@@ -1,4 +1,4 @@
-import { sqsEvent } from './utils/create-api-event'
+import { createSQSEvent } from '../src/utils/create-api-event'
 import server from './server'
 import { randomUUID } from 'crypto'
 
@@ -24,7 +24,7 @@ describe('Server - SQS', () => {
                 },
             },
         }
-        const event = sqsEvent([record])
+        const event = createSQSEvent([record])
         await server.aQueue(event, null, () => {})
 
         expect(consoleSpy).toHaveBeenCalledWith('The body is: ' + record.body)
@@ -40,7 +40,7 @@ describe('Server - SQS', () => {
                 },
             },
         }
-        const event = sqsEvent([record])
+        const event = createSQSEvent([record])
         await server.aQueue(event, null, () => {})
 
         expect(consoleSpy).toHaveBeenCalledWith('The body is: {"a":"47","b":"hello"}')
@@ -56,7 +56,7 @@ describe('Server - SQS', () => {
                 },
             },
         }
-        const event = sqsEvent([record])
+        const event = createSQSEvent([record])
         await server.bQueue(event, null, () => {})
 
         expect(consoleSpy).toHaveBeenCalledWith('The injected value is: some random whatever')
@@ -66,7 +66,7 @@ describe('Server - SQS', () => {
         const record = {
             body: 'some body',
         }
-        const event = sqsEvent([record])
+        const event = createSQSEvent([record])
         await server.aQueue(event, null, () => {})
 
         expect(consoleSpy).toHaveBeenCalledWith('The body is: ' + JSON.stringify(record.body))
@@ -83,7 +83,7 @@ describe('Server - SQS', () => {
                 },
             },
         }
-        const event = sqsEvent([record])
+        const event = createSQSEvent([record])
         await server.bQueue(event, null, () => {})
 
         expect(consoleSpy).toHaveBeenCalledWith(`[${record.messageId}] The message is: Hello World!`)

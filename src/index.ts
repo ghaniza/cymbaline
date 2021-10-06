@@ -1,5 +1,21 @@
 import 'reflect-metadata'
-import { injectable } from 'tsyringe'
+import {
+    injectable,
+    inject,
+    delay,
+    container,
+    singleton,
+    scoped,
+    InjectionToken,
+    registry,
+    DependencyContainer,
+    ValueProvider,
+    TokenProvider,
+    ClassProvider,
+    Provider,
+    FactoryProvider,
+    injectWithTransform,
+} from 'tsyringe'
 import { config } from 'dotenv'
 
 import { Server } from './server'
@@ -39,6 +55,20 @@ export {
     //
     // Imports
     injectable as Injectable,
+    container as Container,
+    singleton as Singleton,
+    inject as Inject,
+    delay as Delay,
+    scoped as Scoped,
+    InjectionToken,
+    registry as Registry,
+    DependencyContainer,
+    ValueProvider,
+    TokenProvider,
+    ClassProvider,
+    Provider,
+    FactoryProvider,
+    injectWithTransform as InjectWithTransform,
     //
     // Controllers
     Controller,

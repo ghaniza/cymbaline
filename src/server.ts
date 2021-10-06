@@ -32,7 +32,7 @@ export class Server {
     private readonly app: Express
     private readonly logger: Logger = new DefaultLogger()
     private readonly errorHandler: ErrorHandler = HTTPException.handler
-    private metadataDir = path.resolve('.cymbaline')
+    private readonly metadataDir = path.resolve('.cymbaline')
 
     constructor(private readonly configuration: ServerConfigurationOptions, options?: ServerOptions) {
         this.app = express()
@@ -366,14 +366,20 @@ export class Server {
 
                 exports[name] = this.getQueueHandler(name)
 
-                serverless.addFunction(name, {
-                    handler: 'dist/index.' + name,
-                    memorySize: 1024,
-                    timeout: 6,
-                    events: {
-                        sqs: q.queueARN,
-                    },
-                })
+                if (!q.queueARN)
+                    this.logger.log(
+                        'warn',
+                        `[server] The "${name}" queue does not have a valid ARN, current value is: ${q.queueARN}`
+                    )
+                else
+                    serverless.addFunction(name, {
+                        handler: 'dist/index.' + name,
+                        memorySize: 1024,
+                        timeout: 6,
+                        events: {
+                            sqs: q.queueARN,
+                        },
+                    })
             })
         }
 

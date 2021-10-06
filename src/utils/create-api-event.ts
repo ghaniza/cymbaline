@@ -32,7 +32,7 @@ const DEFAULT_API_PARAMS = {
     isBase64Encoded: false,
 }
 
-export const apiEvent = (apiParams: EventApiParams) => {
+export const createAPIGatewayEvent = (apiParams: EventApiParams) => {
     const params = DEFAULT_API_PARAMS
     params.requestContext.requestId = randomUUID()
     params.requestContext.stage = apiParams.stage ?? 'dev'
@@ -72,7 +72,7 @@ export const DEFAULT_SQS_PARAMS = {
     awsRegion: 'us-east-1',
 }
 
-export const sqsEvent = (events: EventSQSParams[]) => {
+export const createSQSEvent = (events: EventSQSParams[]) => {
     return {
         Records: events.map((event) => {
             const params = DEFAULT_SQS_PARAMS
