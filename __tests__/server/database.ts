@@ -1,10 +1,10 @@
 export class Database {
     public static configure() {
         return async () =>
-            new Promise((res, rej) => {
+            new Promise((resolve, reject) => {
                 setTimeout(() => {
                     process.env.DEBUG && console.log('Database connected')
-                    res(null)
+                    resolve(null)
                 }, 50)
             })
     }

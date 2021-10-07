@@ -1,11 +1,54 @@
+import { validate } from 'class-validator'
+import { classToPlain, plainToClass } from 'class-transformer'
+import { BadRequestException } from '../exceptions/bad-request.exception'
+
 const MethodDecorator = (method: string, path: string, httpCode: number) => {
     return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
+        const paramTypes = Reflect.getOwnMetadata('design:paramtypes', target, propertyKey)
+
+        const handler = async function (...args: any[]) {
+            await Promise.all(
+                args.map(async (arg, index) => {
+                    if (typeof arg === 'object') {
+                        const value = plainToClass(paramTypes[index], arg)
+                        const errors = await validate(value)
+
+                        if (errors.length) {
+                            throw new BadRequestException(
+                                'Validation Error',
+                                'The following fields failed on validation: ' +
+                                    errors
+                                        .map((e) => e.constraints)
+                                        .reduce((p, c) => p + Object.values(c).join(', '), '')
+                            )
+                        }
+                    }
+                })
+            )
+            const response = await descriptor.value.apply(this, args)
+
+            if (typeof response === 'object' && response.constructor.prototype !== global.Object) {
+                const errors = await validate(response)
+
+                if (errors.length)
+                    throw new BadRequestException(
+                        'Validation Error',
+                        'The following fields failed on validation: ' +
+                            errors.map((e) => e.constraints).reduce((p, c) => p + Object.values(c).join(', '), '')
+                    )
+
+                return classToPlain(response)
+            }
+
+            return response
+        }
+
         const data = {
             propertyKey,
             method,
             path,
             httpCode,
-            handler: descriptor.value,
+            handler,
             arguments: [],
             middlewares: [],
             headers: [],

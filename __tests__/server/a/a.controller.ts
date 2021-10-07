@@ -1,13 +1,33 @@
-import { Controller } from '../../../src/decorators/controller.decorator'
-import { Get, Post } from '../../../src/decorators/method.decorator'
-import { BadRequestException } from '../../../src/exceptions/bad-request.exception'
-import { Body, Param, Query } from '../../../src/decorators/argument.decorator'
+import {
+    Controller,
+    Get,
+    Post,
+    BadRequestException,
+    Body,
+    Param,
+    Query,
+    Middleware,
+    Header,
+    HttpCode,
+} from '../../../src'
+
 import { AService } from './a.service'
 import { AMiddleware } from '../middlewares/a.middleware'
-import { Middleware } from '../../../src/decorators/middleware.decorator'
-import { Header } from '../../../src/decorators/header.decorator'
 import { BMiddleware } from '../middlewares/b.middleware'
-import { HttpCode } from '../../../src/decorators/http-code.decorator'
+import { IsNumber, IsString } from 'class-validator'
+
+class BodyDto {
+    @IsNumber()
+    a: number
+
+    b: string
+    c: number
+}
+
+class ResponseDto {
+    @IsString()
+    message: string
+}
 
 @Controller('/')
 export class AController {
@@ -38,13 +58,21 @@ export class AController {
 
     @Post('/a')
     @Header('some-custom-header', 'some custom value')
-    public postEndpoint() {
+    public async postEndpoint(): Promise<ResponseDto> {
         return { message: 'You just posted' }
+    }
+
+    @Post('/a-error')
+    public async postEndpointWithError(): Promise<ResponseDto> {
+        const response = new ResponseDto()
+        // eslint-disable-next-line no-new-func
+        response.message = new Function('return 4')()
+        return response
     }
 
     @HttpCode(200)
     @Post('/:a/parsed')
-    public parsedEndpoint(@Body() body: any, empty: any, @Param('a') param: string, @Query() query: any) {
+    public parsedEndpoint(@Body() body: BodyDto, empty: any, @Param('a') param: string, @Query() query: any) {
         return `This is the body: ${JSON.stringify(body)}, with "a" param: ${param} and query: ${JSON.stringify(query)}`
     }
 

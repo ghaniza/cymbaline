@@ -7,12 +7,13 @@
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "declaration": true,
-    "target": "esnext",
+    "target": "es6",
     "sourceMap": true,
     "baseUrl": "./src",
     "outDir": "./lib",
     "skipLibCheck": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "strict": false
   },
   "compileOnSave": true,
   "ts-node": {

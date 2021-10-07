@@ -1,9 +1,8 @@
-import { SQSRecord } from 'aws-lambda'
 import { DeleteMessageCommand, GetQueueUrlCommand, SQSClient } from '@aws-sdk/client-sqs'
 
 export class AwsService {
-    public async getQueueUrl(record: SQSRecord): Promise<string> {
-        const queueName = record.eventSourceARN.split(':').pop()
+    public async getQueueUrl(queueARN: string): Promise<string> {
+        const queueName = queueARN.split(':').pop()
 
         const client = new SQSClient({ region: process.env.AWS_REGION })
         const command = new GetQueueUrlCommand({ QueueName: queueName })

@@ -9,6 +9,8 @@ import qs from 'qs'
 import path from 'path'
 import fs from 'fs'
 import { Serverless } from './utils/serverless'
+import { classToPlain, plainToClass, serialize } from 'class-transformer'
+import instance from 'tsyringe/dist/typings/dependency-container'
 
 type ServerConfigurationOptions = {
     dependencies: ((...args: any[]) => Promise<any> | any)[]
@@ -190,8 +192,9 @@ export class Server {
                             route.headers.forEach(([header, value]) => {
                                 res.setHeader(header, value)
                             })
+
                             const args = this.getArgumentsByType(route.arguments, req, res)
-                            const response = await route.handler.bind(instance)(...args)
+                            const response = await route.handler.apply(instance, args)
 
                             if (route.arguments.find((a) => a && a?.type === 'res' && a?.skip)) return next()
                             return res.status(route.httpCode).send(response)
@@ -302,7 +305,8 @@ export class Server {
 
                 const args = this.getArgumentsByEvent(queueHandler.arguments, record)
 
-                return queueHandler.handler.bind(queue)(...args)
+                await queueHandler.handler.bind(queue)(...args)
+                queue.deleteMessageOnSuccess(record.receiptHandle)
             })
         )
     }

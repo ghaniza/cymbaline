@@ -3,7 +3,7 @@ import { createAPIGatewayEvent } from '../src/utils/create-api-event'
 
 describe('Server - API Gateway', () => {
     beforeAll(() => {
-        delete process.env.DEBUG
+        // delete process.env.DEBUG
     })
 
     it('Should get a route with injected class', async () => {
@@ -30,6 +30,16 @@ describe('Server - API Gateway', () => {
         expect(response.body).toEqual(JSON.stringify({ message: 'You just posted' }))
     })
 
+    it('Should not post upon a invalid body', async () => {
+        const response = await server.apiHandler(createAPIGatewayEvent({ path: '/a-error', method: 'POST' }))
+
+        expect(response.statusCode).toEqual(400)
+        expect(response.headers['content-type'].startsWith('application/json')).toBeTruthy()
+        expect(response.body).toEqual(
+            '{"error":"Validation Error","error_description":"The following fields failed on validation: message must be a string"}'
+        )
+    })
+
     it('Should have a custom header', async () => {
         const response = await server.apiHandler(createAPIGatewayEvent({ path: '/by-id/123456', method: 'GET' }))
 
@@ -54,6 +64,22 @@ describe('Server - API Gateway', () => {
             `This is the body: ${body}, with "a" param: abc123 and query: ${JSON.stringify({
                 token: 'supersecret',
             })}`
+        )
+    })
+
+    it('Should not get a parsed value', async () => {
+        const queryString = { token: 'ultra this time => supersecret' }
+        const body = JSON.stringify({ a: '1', b: '2' })
+        const headers = { 'Content-Type': 'application/json' }
+
+        const response = await server.apiHandler(
+            createAPIGatewayEvent({ path: '/jaguatirica/parsed', method: 'POST', queryString, body, headers })
+        )
+
+        expect(response.statusCode).toEqual(400)
+        expect(response.headers['content-type'].startsWith('application/json')).toBeTruthy()
+        expect(response.body).toEqual(
+            '{"error":"Validation Error","error_description":"The following fields failed on validation: a must be a number conforming to the specified constraints"}'
         )
     })
 
