@@ -1,0 +1,43 @@
+{
+  "service": "-->serviceName<--",
+  "useDotenv": true,
+  "package": {
+    "individually": true,
+    "patterns": [
+      "src/__tests__/**",
+      ".idea/**",
+      "serverless-configs/**",
+      "envs/**",
+      "support/**",
+      "node_modules/.cache/**",
+      "node_modules/aws-lambda/**",
+      ".env.*",
+      ".env"
+    ]
+  },
+  "plugins": [
+    "serverless-offline"
+  ],
+  "provider": {
+    "name": "aws",
+    "runtime": "nodejs14.x",
+    "stage": "${opt:stage}",
+    "region": "us-east-1",
+    "environment": [
+      {
+        "KEY": "VALUE"
+      }
+    ]
+  },
+  "functions": {
+    "app": {
+      "handler": "-->handler<--",
+      "timeout": 6,
+      "events": [
+        {
+          "http": "ANY /{proxy+}"
+        }
+      ]
+    }
+  }
+}

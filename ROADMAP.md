@@ -1,0 +1,29 @@
+# Roadmap
+
+- [x] Create server class
+- [x] Controller decorator
+- [x] Methods decorator
+- [x] Exceptions
+- [x] Add middlewares & plugins
+- [x] Logger
+- [ ] Transcribe lambda event
+- [x] Custom property decorators
+- [ ] Create `README`
+- [x] Test queue handlers
+- [x] Add `serverless`
+- [x] Automatic `serverless` config creation
+- [ ] Append configuration to `package.json`
+- [x] Delete from queue option
+- [x] Additional modules
+- [ ] Expose API to `CustomMiddleware` interface
+- [ ] Refactor
+- [ ] Bypass additional calls
+- [ ] Publish package
+- [ ] GH actions/CI
+- [x] Better logging
+- [ ] ORM connectors*
+- [ ] SWAGGER middleware*
+- [ ] Sentry middleware*
+- [ ] Validation
+- [ ] Response serialization
+- [ ] Exclude `devDependencies` from `babel-loader`*
